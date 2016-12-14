@@ -1,0 +1,47 @@
+body {
+	margin-left: 5%;
+	margin-top: 2.5%;
+	width: 7.5in;
+}
+
+#plotArea {
+	fill: black;
+}
+
+h1 {
+	/* Color is green to represent US currency. */
+	color: rgba(0, 180, 0, 1);
+	/* Lobster is a Google font. */
+	font-family: Lobster, sans-serif;
+	font-size: 40px;
+	font-weight: lighter;
+	text-align: center;
+}
+
+p {
+	font-size: 1.1em;
+}
+
+svg {
+	margin-top: 5px;
+}
+
+ul {
+	font-size: 1.1em;
+}
+
+li {
+	margin-top: 20px;
+}
+li:first-child {
+	margin-top: 0;
+}
+li p {
+	margin-top: 8px;
+}
+
+.line {
+	fill: none;
+	stroke: rgba(0, 170, 0, 1);
+	stroke-width: 2px;
+}

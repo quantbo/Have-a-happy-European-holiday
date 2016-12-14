@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<!--		Google font. Place before link to main stylesheet.-->
+		<link rel="stylesheet" type="text/css"
+          href="https://fonts.googleapis.com/css?family=Lobster">
+		<link rel="stylesheet" href="index.css">
+	</head>
+	<body>
+		<h1>Have a happy (European) holiday!</h1>
+		<p>As I write this in mid-December 2016 the US dollar is strong relative to major European currencies (see charts below). This means that for US citizens contemplating a holiday vacation, Europe is an attractive destination. A little chilly, yes, but affordable.</p>
+		<p>The real point of this post, though, is to illustrate a few topics in the presentation of time series, using exchange rate time series as examples. The topics are as follows:</p>
+		<ul>
+			<li>Zooming: Focusing on a shorter or longer stretch of a time series.</li>
+			<li>Panning: Moving to the left or right in a time series.</li>
+			<li>Inversion
+				<p>We might want to display (for example) dollars per euro or euros per dollar. We provide the ability to switch between these options.</p>
+			</li>
+			<li>Missing data
+				<p>Our times series have missing data. They skip weekends and also some other days. We must decide how to handle these missing data. Over long periods of time it is reasonable to interpolate; however, over short spans of time, such as a week, interpolation or extrapolation over a couple of days of missing data is inappropriate as it would misrepresent a sizeable proportion of the data.</p>
+			</li>
+		</ul>
+		<!-- Match the id's of the svg elements to the tags of the fred object literal stored in 'fred.js'. -->
+		<svg id='euro'></svg>
+		<hr>
+		<p>=============================================================</p>
+<!--
+		<svg id='pound'></svg>
+		<svg id='swissfranc'></svg>
+-->
+	</body>
+	<script src='fred.js'></script>
+	<script src='index.js'></script>
+</html>
