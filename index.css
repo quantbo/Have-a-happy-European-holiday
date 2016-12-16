@@ -1,3 +1,11 @@
+a {
+	color: blue;
+	text-decoration: none;
+}
+a:hover {
+	color:orange;
+}
+
 body {
 	margin-left: 5%;
 	margin-top: 2.5%;
@@ -24,7 +32,11 @@ p {
 }
 
 svg {
+	margin-bottom: 12.5px;
 	margin-top: 5px;
+}
+svg:last-of-type {
+	margin-bottom: 5px;
 }
 
 ul {
@@ -55,6 +67,10 @@ li p {
 .title {
 	font-family: sans-serif;
 	font-size: 1.6em;
+}
+
+#copyright {
+	font-style: italic;
 }
 
 #plotArea {
