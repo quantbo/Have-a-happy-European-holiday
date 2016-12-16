@@ -12,7 +12,7 @@
 	</head>
 	<body>
 		<h1>Have a happy (European) holiday!</h1>
-		<p id=copyright>Copyright (C) 2016, John Van Praag</p>
+		<p id='pub'>Published: 2016-12-16</p>
 		<p>As I write this in mid-December 2016 the US dollar is strong relative to major European currencies (see charts below). This means that for US citizens contemplating a holiday vacation, Europe is an attractive destination. A little chilly, yes, but affordable.</p>
 		<p>The real point of this post, though, is to consider how to present time series where there are a lot of gaps. The daily currency time series I am using are obtained from the Federal Reserve Bank of St. Louis (<a href='https://fred.stlouisfed.org/'>FRED</a>). They omit data for weekends, holidays, and also some days that, so far as I can tell, are nothing special.</p>
 		<h2>Lots of missing data</h2>
@@ -24,6 +24,9 @@
 		<h2>Coding note</h2>
 		<p>Downloading, cleaning, and transforming the data are easily managed in <a href='https://www.r-project.org/'>R</a>. To display the data in a browser <a href='https://d3js.org/'>D3</a> is indispensable. Attractive fonts are supplied by <a href='https://fonts.google.com/'>Google Fonts</a>.</p>
 		<p>You can view the code and data on <a href='https://github.com/quantbo/Have-a-happy-European-holiday'>Github</a>.</p>
+		<footer>
+			<p id=copyright>Copyright (C) 2016, John Van Praag</p>
+		</footer>
 	</body>
 	<script src='fred.js'></script>
 	<script src='index.js'></script>
