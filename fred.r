@@ -13,19 +13,16 @@ The field dollars_per_currency is TRUE if the data represent dollars per the ind
 template = 'http://research.stlouisfed.org/fred2/data/XXX.csv'
 
 fred = list(
-	list(my_title = 'Dollars per Euro',
-		fred_title = 'U.S. / Euro Foreign Exchange Rate',
-		citation = 'U.S. / Euro Foreign Exchange Rate [DEXUSEU], retrieved from FRED, Federal Reserve Bank of St. Louis',
+	list(title = 'Euros per Dollar',
+		citation = 'Source: Federal Reserve Bank of St. Louis (FRED)',
 		symbol = 'DEXUSEU',
 		dollars_per_currency = TRUE),
-	list(my_title = 'Dollars per Pound',
-		fred_title = 'U.S. / U.K. Foreign Exchange Rate',
-		citation = 'Board of Governors of the Federal Reserve System (US), U.S. / U.K. Foreign Exchange Rate [DEXUSUK], retrieved from FRED, Federal Reserve Bank of St. Louis',
+	list(title = 'Pounds per Dollar',
+		citation = 'Source: Federal Reserve Bank of St. Louis (FRED)',
 		symbol = 'DEXUSUK',
 		dollars_per_currency = TRUE),
-	list(my_title = 'Dollars per Swiss Franc',
-		fred_title = 'Switzerland / U.S. Foreign Exchange Rate',
-		citation = 'Board of Governors of the Federal Reserve System (US), Switzerland / U.S. Foreign Exchange Rate [DEXSZUS], retrieved from FRED, Federal Reserve Bank of St. Louis',
+	list(title = 'Swiss Francs per Dollar',
+		citation = 'Source: Federal Reserve Bank of St. Louis (FRED)',
 		symbol = 'DEXSZUS',
 		dollars_per_currency = FALSE)
 )

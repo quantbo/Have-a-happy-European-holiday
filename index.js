@@ -3,8 +3,9 @@
 const body = d3.select('body').node();
 //Match the width of the SVG element to the width of the body.
 const width = body.getBoundingClientRect().width;
-const height = 400;
-const margin = {top: 20, right: 20, bottom: 30, left: 50};
+console.log('body width: ' + width);
+const height = 0.66 * width;
+const margin = {top: 35, right: 30, bottom: 55, left: 50};
 const innerHeight = height - margin.top - margin.bottom;
 const innerWidth = width - margin.left - margin.right;
 
@@ -18,11 +19,13 @@ let yScale = d3.scaleLinear().range([innerHeight, 0]);
 //################## First iteration ############
 //In this first iteration we focus on the Euro graph.
 //The present script will be converted into a function so that an arbitrary currency graph can be generated.
+//In that case 'id' will be the argument of the function.
 const id = 'euro';
+const item = fred[id];
 const svg = d3.select(`#${id}`)
 	.attr('width', `${width}`)
 	.attr('height', `${height}`);
-//A rectangle congruent with the svg is helpful during development.
+//A rectangle congruent with the svg element is helpful during development.
 //In production, comment out.
 //const rect = svg.append('rect')
 //	.attr('height', `${height}px`)
@@ -39,17 +42,39 @@ g_el.append('rect')
 	.attr('id', 'plotArea')
 	.attr('height', innerHeight)
 	.attr('width', innerWidth);
+//Graph title.
+g_el.append('text')
+	.text(item['title'])
+	.attr('class', 'title')
+	.attr('x', innerWidth / 2)
+	.attr('y', 0)
+	.attr('dy', -0.3 * margin.top)
+	.attr('text-anchor', 'middle');
+//Cite data source.
+g_el.append('text')
+	.text(item['citation'])
+	.attr('class', 'citation')
+	.attr('x', innerWidth)
+	.attr('y', innerHeight)
+	.attr('dy', 0.65 * margin.right)
+	.attr('transform', `rotate(-90, ${innerWidth}, ${innerHeight})`);
+	
 
 //Load the data.
-const item = fred[id];
 const symbol = item['symbol'];
 console.log(symbol);
 d3.csv(`${symbol}.csv`, (error, data) => {
 	if (error) throw new Error('d3.csv error');
 	//debug:
-	//To get a grip on missing data focus on a subset of records.
-	const cut = data.length - 100;
+	//Focus on a subset of records.
+	const subset = 2*365;
+	const cut = data.length - subset;
 	data = data.slice(cut);
+	console.log('data.length: ', data.length);
+//	let index = data.findIndex((x) => {return x.DATE.match('2016')});
+//	console.log('index: ', index);
+//	//Discard data before 2016.
+//	data = data.slice(index);
 	//Transform data from strings to dates and numbers.
 	data.forEach((d, i) => {
 		d.DATE = parseDate(d.DATE);
@@ -70,19 +95,38 @@ d3.csv(`${symbol}.csv`, (error, data) => {
 	yExtent[1] = 1.01 * yExtent[1];
 	yScale.domain(yExtent);
 	//Place a vertical line at each data point.
-	g_el.selectAll('.line') //Any non-empty string will serve here.
+	//Adjust the stroke-width to the number of data points.
+	let sw = 2;
+	if (data.length <= 32) {
+		sw = 8;
+	} else
+	if (data.length <= 64) {
+		sw = 6;
+	} else
+	if (data.length <= 128) {
+		sw = 4;
+	}
+	g_el.selectAll('wombat') //Any non-empty string will serve here.
 		.data(data)
 		.enter()
 		.append('line')
 		.attr('class', 'line')
+		.style('stroke-width', sw)
 		.attr('x1', (d) => {return xScale(d.DATE);})
 		.attr('x2', (d) => {return xScale(d.DATE);})
 		.attr('y1', innerHeight)
 		.attr('y2', (d) => {return (isNaN(d.VALUE) ? innerHeight : yScale(d.VALUE));});
 	//Axes.
+	//x-axis
 	g_el.append('g')
 		.attr('transform', `translate(0, ${innerHeight})`)
-		.call(d3.axisBottom(xScale));
+		.call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y-%m-%d")))
+		.selectAll('text')
+		.style('text-anchor', 'end')
+		.attr('transform', 'rotate(-45)')
+		.attr('dx', '-0.8em')
+		.attr('dy', '0.1em');
+	//y-axis
 	g_el.append('g')
 		.call(d3.axisLeft(yScale));
 })

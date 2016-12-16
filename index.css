@@ -4,10 +4,6 @@ body {
 	width: 7.5in;
 }
 
-#plotArea {
-	fill: black;
-}
-
 h1 {
 	/* Color is green to represent US currency. */
 	color: rgba(0, 180, 0, 1);
@@ -16,6 +12,11 @@ h1 {
 	font-size: 40px;
 	font-weight: lighter;
 	text-align: center;
+}
+
+h2 {
+	font-family: Raleway;
+	font-weight: 400;
 }
 
 p {
@@ -40,8 +41,22 @@ li p {
 	margin-top: 8px;
 }
 
+.citation {
+	font-family: serif;
+	font-weight: 100;
+	font-size: 0.8em;
+}
+
 .line {
 	fill: none;
 	stroke: rgba(0, 170, 0, 1);
-	stroke-width: 2px;
+}
+
+.title {
+	font-family: sans-serif;
+	font-size: 1.6em;
+}
+
+#plotArea {
+	fill: rgba(25, 0, 0, 0.05);
 }

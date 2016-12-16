@@ -3,34 +3,33 @@
 	<head>
 		<meta charset="utf-8">
 		<script src="https://d3js.org/d3.v4.min.js"></script>
-		<!--		Google font. Place before link to main stylesheet.-->
-		<link rel="stylesheet" type="text/css"
-          href="https://fonts.googleapis.com/css?family=Lobster">
+		<!-- Google fonts. Place before link to main stylesheet, which may refer to Google fonts. -->
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Lobster">
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Raleway">
 		<link rel="stylesheet" href="index.css">
 	</head>
 	<body>
 		<h1>Have a happy (European) holiday!</h1>
 		<p>As I write this in mid-December 2016 the US dollar is strong relative to major European currencies (see charts below). This means that for US citizens contemplating a holiday vacation, Europe is an attractive destination. A little chilly, yes, but affordable.</p>
-		<p>The real point of this post, though, is to illustrate a few topics in the presentation of time series, using exchange rate time series as examples. The topics are as follows:</p>
-		<ul>
-			<li>Zooming: Focusing on a shorter or longer stretch of a time series.</li>
-			<li>Panning: Moving to the left or right in a time series.</li>
-			<li>Inversion
-				<p>We might want to display (for example) dollars per euro or euros per dollar. We provide the ability to switch between these options.</p>
-			</li>
-			<li>Missing data
-				<p>Our times series have missing data. They skip weekends and also some other days. We must decide how to handle these missing data. Over long periods of time it is reasonable to interpolate; however, over short spans of time, such as a week, interpolation or extrapolation over a couple of days of missing data is inappropriate as it would misrepresent a sizeable proportion of the data.</p>
-			</li>
-		</ul>
+		<p>The real point of this post, though, is to consider how to present time series where there are a lot of gaps. The daily currency time series I am using are obtained from the Federal Reserve Bank of St. Louis (FRED). They omit data for weekends, holidays, and also some days that, so far as I can tell, are nothing special.</p>
+		<h2>Lots of missing data</h2>
+		###################### Can I put in a pop-out here about 29% missing data? ##############
+		<p>The result is that a large proportion of the daily data are missing. To be precise, 29% of the data are missing from the daily time series for the dollar/euro, dollar/pound, and Swiss franc/dollar time series.</p>
+		<p>When almost a third of the data are missing from a time series the common practice of drawing a line graph may conceal as much as it reveals. The viewer may be mislead into the impression that the data are continuous whereas, in fact, they are intermittent. Having pondered how best to present such time series data I have concluded that bar charts are appropriate. Given that a time series tends to have a lot of data points, the bars are necessarily thin.</p>
+		<p>Attaching a tooltip to each bar to provide the exact value it represents is helpful.</p>
+
+		
+		
 		<!-- Match the id's of the svg elements to the tags of the fred object literal stored in 'fred.js'. -->
 		<svg id='euro'></svg>
 		<hr>
 		<p>=============================================================</p>
 <!--
 		<svg id='pound'></svg>
-		<svg id='swissfranc'></svg>
 -->
 	</body>
 	<script src='fred.js'></script>
 	<script src='index.js'></script>
+	<h2>Coding note</h2>
+	<p>Downloading, cleaning, and transforming the data are very easily managed in <a href='https://www.r-project.org/'>R</a>. To display the data in a browser <a href='https://d3js.org/'>D3</a> is indispensable. Attractive fonts are supplied by <a href='https://fonts.google.com/'>Google Fonts</a>.</p>
 </html>
