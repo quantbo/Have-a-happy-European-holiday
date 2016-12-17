@@ -16,10 +16,10 @@ const parseDate = d3.timeParse('%Y-%m-%d');
 let xScale = d3.scaleTime().range([0, innerWidth]);
 let yScale = d3.scaleLinear().range([innerHeight, 0]);
 
-console.log(d3.selectAll('svg').nodes().forEach((d, i) => {
+d3.selectAll('svg').nodes().forEach((d, i) => {
 	console.log('----- ' + d.id + ' -----');
 	renderChart(d.id);
-}));
+});
 
 function renderChart(id) {
 	//id: SVG id.
