@@ -18,10 +18,10 @@ let yScale = d3.scaleLinear().range([innerHeight, 0]);
 
 console.log(d3.selectAll('svg').nodes().forEach((d, i) => {
 	console.log('----- ' + d.id + ' -----');
-	updateChart(d.id);
+	renderChart(d.id);
 }));
 
-function updateChart(id) {
+function renderChart(id) {
 	//id: SVG id.
 	const item = fred[id];
 	const svg = d3.select(`#${id}`)
