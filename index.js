@@ -16,12 +16,21 @@ const parseDate = d3.timeParse('%Y-%m-%d');
 let xScale = d3.scaleTime().range([0, innerWidth]);
 let yScale = d3.scaleLinear().range([innerHeight, 0]);
 
+//Store the data and the initial date for each times series.
+let status = {'data':{}, 'dateInit':{}};
+
 d3.selectAll('svg').nodes().forEach((d, i) => {
 	console.log('----- ' + d.id + ' -----');
-	renderChart(d.id);
+	//Default time series start date.
+	//Javascript counts months and days of the week beginning with 0.
+	let dateInit = new Date(2016, 0, 1);
+	renderChart(d.id, dateInit);
+	status.dateInit[d.id] = dateInit;
 });
 
-function renderChart(id) {
+console.log(status);
+
+function renderChart(id, dateInit) {
 	//id: SVG id.
 	const item = fred[id];
 	const svg = d3.select(`#${id}`)
@@ -66,23 +75,20 @@ function renderChart(id) {
 	console.log(symbol);
 	d3.csv(`${symbol}.csv`, (error, data) => {
 		if (error) throw new Error('d3.csv error');
-//		//Focus on a subset of records.
-//		const subset = 2*365;
-//		const cut = data.length - subset;
-//		data = data.slice(cut);
-		//Begin on first day of 2016.
-		let index = data.findIndex((x) => {return x.DATE.match('2016')});
-		console.log('index: ', index);
-		//Discard data before 2016.
-		data = data.slice(index);
-		console.log('data.length: ', data.length);
 		//Transform data from strings to dates and numbers.
 		data.forEach((d, i) => {
 			d.DATE = parseDate(d.DATE);
 			d.VALUE = +d.VALUE;
 		})
+		status.data[id] = data;
+		console.log(status);
+		let index = data.findIndex((x) => {return x.DATE >= dateInit;});
+		console.log('index: ', index);
+		//dataSub stands for "data subset".
+		let dataSub = data.slice(index);
+		console.log('data.length: ', dataSub.length);
 		//Set scale domains.
-		let xExtent = d3.extent(data, (d) => {return d.DATE;});
+		let xExtent = d3.extent(dataSub, (d) => {return d.DATE;});
 		//Provide a 1 day buffer to left and right of x axis so that initial and terminal vertical line do not lie at edges of display area.
 		//A day expressed in milliseconds.
 		const day = 24 * 60 * 60 * 1000;
@@ -91,24 +97,24 @@ function renderChart(id) {
 		xScale.domain(xExtent);
 		//Provide a buffer at bottom of y extent so that the minimum value does not disappear.
 		//Provide a buffer at to so that largest values do not touch top of display area.
-		let yExtent = d3.extent(data, (d) => {return d.VALUE;});
+		let yExtent = d3.extent(dataSub, (d) => {return d.VALUE;});
 		yExtent[0] = 0.95 * yExtent[0];
 		yExtent[1] = 1.01 * yExtent[1];
 		yScale.domain(yExtent);
 		//Place a vertical line at each data point.
 		//Adjust the stroke-width to the number of data points.
 		let sw = 2;
-		if (data.length <= 32) {
+		if (dataSub.length <= 32) {
 			sw = 8;
 		} else
-		if (data.length <= 64) {
+		if (dataSub.length <= 64) {
 			sw = 6;
 		} else
-		if (data.length <= 128) {
+		if (dataSub.length <= 128) {
 			sw = 4;
 		}
 		g_el.selectAll('wombat') //Any non-empty string will serve here.
-			.data(data)
+			.data(dataSub)
 			.enter()
 			.append('line')
 			.attr('class', 'line')

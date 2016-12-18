@@ -12,6 +12,14 @@ body {
 	width: 7.5in;
 }
 
+button {
+	border-color: black;
+	color: aliceblue;
+	background-color:blue;
+	border-radius: 0.25em;
+	font-size: 2em;
+}
+
 h1 {
 	/* Color is green to represent US currency. */
 	color: rgba(0, 180, 0, 1);
