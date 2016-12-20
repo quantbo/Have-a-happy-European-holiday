@@ -19,19 +19,20 @@ let yScale = d3.scaleLinear().range([innerHeight, 0]);
 //Default time series start date.
 let dateInit = new Date(2016, 0, 1);
 
-//For each time series, store the data, the initial date, and the grouping ('g') element.
+//For each time series store the data and the initial date.
 //This allows the data to be re-used without reloading from disk.
-//It also allows the initial date to be updated based on the most current initial date.
-//Finally, it allows charts to be updated without re-doing fixed characteristics such as the chart dimensions, background color, and so on.
+//It also allows the initial date to be updated based on the current initial date.
 let status = {};
 //Populate status.
-d3.selectAll('svg').nodes().forEach((d, i) => {
+d3.selectAll('div').nodes().forEach((d, i) => {
 	status[d.id] = {};
 	loadData(d.id);
 	status[d.id].dateInit = dateInit;
 });
+console.log('status:');
+console.log(status);
 
-//Call renderChart inside the callback. Otherwise, renderCharts runs before the data are loaded.
+//Call renderChart inside the callback. Otherwise, renderChart runs before the data are loaded.
 function loadData(id) {
 	const symbol = fred[id].symbol;
 	d3.csv(`${symbol}.csv`, (error, data) => {
@@ -42,8 +43,8 @@ function loadData(id) {
 			d.VALUE = +d.VALUE;
 		})
 		status[id].data = data;
-		status[id].g_el = renderChartFixed(id);
-		renderChart(id);
+		const g_el = renderChartFixed(id);
+		renderChart(id, g_el);
 	});
 }
 
@@ -66,19 +67,19 @@ function yScaleSetDomain(dataSub) {
 	yScale.domain(yExtent);
 }
 
-function renderChart(id) {
+function renderChart(id, g_el) {
 	console.log('renderChart: ' + id);
-	const data = status[id].data;
-	let index = data.findIndex((x) => {return x.DATE >= status[id].dateInit;});
+	const dataAll = status[id].data;
+	let index = dataAll.findIndex((x) => {return x.DATE >= status[id].dateInit;});
 	console.log('index: ', index);
-	let dataSub = data.slice(index); //data subset.
-	console.log('data.length: ', dataSub.length);
+	let dataSub = dataAll.slice(index); //data subset.
+	let count = dataSub.length;
+	console.log('dataSub.length: ', count);
 	//Set scale domains.
 	xScaleSetDomain(dataSub);
 	yScaleSetDomain(dataSub);
 	//Place a vertical line at each data point.
 	let sw = strokeWidth(dataSub); //Adjust stroke width to number of data points.
-	const g_el = status[id].g_el;
 	g_el.selectAll('wombat') //Any non-empty string will serve here.
 		.data(dataSub)
 		.enter()
@@ -106,21 +107,30 @@ function renderChart(id) {
 		.attr('id', 'yAxis')
 		.call(yAxis);
 
-	d3.select('#euroIn').on('click', () => {
-		let dateInit = status['euro'].dateInit;
-		//During initial development arbitrarily choose a new dateInit.
-		//Recall that in Javascript months are numbered from 0.
-		dateInit = new Date(2016, 10, 15);
-		status['euro'].dateInit = dateInit;
-		let data = status['euro'].data;
-		let index = data.findIndex((x) => {return x.DATE >= dateInit;});
-		let dataSub = data.slice(index); //data subset.
+	//========== zoomIn ==========
+	d3.select(`#${id}`).select('#zoomIn').on('click', () => {
+		console.log(`zoomIn, id = ${id}  count = ${count}`);
+		//If the number of data points is less than 2 weeks, grey the button and return.
+		if (count < 14) {
+			let me = d3.select(`#${id}`).select('#zoomIn');
+			me.disabled = true;
+			me.style('background-color', 'rgba(128, 128, 128, 1)');
+			return;
+		}
+		//Update dateInit.
+		let dateInit = status[id].dateInit;
+		console.log(`dateInit (before update): ${dateInit}`);
+		count = Math.round(count/2);
+		dateInit = addDays(dateInit, count);
+		console.log(`dateInit (after update): ${dateInit}`);
+		status[id].dateInit = dateInit;
+		let index = dataAll.findIndex((x) => {return x.DATE >= dateInit;});
+		dataSub = dataAll.slice(index); //data subset.
 		//Set scale domains.
 		xScaleSetDomain(dataSub);
 		yScaleSetDomain(dataSub);
 		let sw = strokeWidth(dataSub); //Adjust stroke width to number of data points.
 		console.log('sw: ', sw);
-		let g_el = status['euro'].g_el;
 		let update = g_el
 			.selectAll('line')
 			.data(dataSub, (d, i) => {

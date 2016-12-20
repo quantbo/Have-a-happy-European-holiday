@@ -19,9 +19,19 @@
 		<p>The result is that a large proportion of the daily data are missing. To be precise, 29% of days are missing from the daily time series for the Euro and Pound time series.</p>
 		<p>When almost a third of the data are missing from a time series the common practice of drawing a line graph may conceal as much as it reveals. The viewer may be misled into the impression that the data are continuous whereas, in fact, they are intermittent. Having pondered how best to present such time series data I have concluded that bar charts are appropriate. Given that a time series tends to have a lot of data points, the bars are necessarily thin.</p>
 
-		<!-- Match the id's of the svg elements to the tags of the fred object literal stored in 'fred.js'. -->
-		<svg id='euro'></svg><br><button id='euroIn'>Zoom in</button>
-		<svg id='pound'></svg><br><button id='poundIn'>Zoom in</button>
+		<!-- Match the id's of the div elements to the tags of the fred object literal stored in 'fred.js'. -->
+		<div id='euro'>
+			<svg></svg>
+			<br>
+			<button id='zoomIn'>Zoom In</button>
+			<button id='zoomOut'>Zoom Out</button>
+		</div>
+		<div id='pound'>
+			<svg></svg>
+			<br>
+			<button id='zoomIn'>Zoom In</button>
+			<button id='zoomOut'>Zoom Out</button>
+		</div>
 
 		<h2>Coding note</h2>
 		<p>Downloading, cleaning, and transforming the data are easily managed in <a href='https://www.r-project.org/'>R</a>. To display the data in a browser <a href='https://d3js.org/'>D3</a> is indispensable. Attractive fonts are supplied by <a href='https://fonts.google.com/'>Google Fonts</a>.</p>
@@ -32,6 +42,7 @@
 	</body>
 	<script src='fred.js'></script>
 	<script src='strokeWidth.js'></script>
+	<script src='addDays.js'></script>
 	<script src='renderChartFixed.js'></script>
 	<script src='index.js'></script>
 </html>
