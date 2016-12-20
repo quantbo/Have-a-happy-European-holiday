@@ -13,7 +13,6 @@ body {
 }
 
 button {
-	border-color: black;
 	color: aliceblue;
 	background-color:blue;
 	border-radius: 0.25em;
@@ -47,6 +46,7 @@ svg:last-of-type {
 	margin-bottom: 5px;
 }
 
+/*
 ul {
 	font-size: 1.1em;
 }
@@ -60,6 +60,7 @@ li:first-child {
 li p {
 	margin-top: 8px;
 }
+*/
 
 .citation {
 	font-family: serif;

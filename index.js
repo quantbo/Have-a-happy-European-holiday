@@ -16,63 +16,24 @@ const parseDate = d3.timeParse('%Y-%m-%d');
 let xScale = d3.scaleTime().range([0, innerWidth]);
 let yScale = d3.scaleLinear().range([innerHeight, 0]);
 
-//Store the data and the initial date for each times series.
-let status = {'data':{}, 'dateInit':{}};
+//Default time series start date.
+let dateInit = new Date(2016, 0, 1);
 
+//For each time series, store the data, the initial date, and the grouping ('g') element.
+//This allows the data to be re-used without reloading from disk.
+//It also allows the initial date to be updated based on the most current initial date.
+//Finally, it allows charts to be updated without re-doing fixed characteristics such as the chart dimensions, background color, and so on.
+let status = {};
+//Populate status.
 d3.selectAll('svg').nodes().forEach((d, i) => {
-	console.log('----- ' + d.id + ' -----');
-	//Default time series start date.
-	//Javascript counts months and days of the week beginning with 0.
-	let dateInit = new Date(2016, 0, 1);
-	renderChart(d.id, dateInit);
-	status.dateInit[d.id] = dateInit;
+	status[d.id] = {};
+	loadData(d.id);
+	status[d.id].dateInit = dateInit;
 });
 
-console.log(status);
-
-function renderChart(id, dateInit) {
-	//id: SVG id.
-	const item = fred[id];
-	const svg = d3.select(`#${id}`)
-		.attr('width', `${width}`)
-		.attr('height', `${height}`);
-	//A rectangle congruent with the svg element is helpful during development.
-	//In production, comment out.
-//	const rect = svg.append('rect')
-//		.attr('height', `${height}px`)
-//		.attr('width', `${width}px`)
-//		.style('fill', 'none')
-//		.style('stroke', 'black')
-//		.style('stroke-width', '1px');
-	const g_el = svg.append('g')
-		.attr('height', innerHeight)
-		.attr('width', innerWidth)
-		.attr('transform', `translate(${margin.left}, ${margin.top})`);
-	//Append a rectangle to provide a background color to the display area.
-	g_el.append('rect')
-		.attr('id', 'plotArea')
-		.attr('height', innerHeight)
-		.attr('width', innerWidth);
-	//Graph title.
-	g_el.append('text')
-		.text(item['title'])
-		.attr('class', 'title')
-		.attr('x', innerWidth / 2)
-		.attr('y', 0)
-		.attr('dy', -0.3 * margin.top)
-		.attr('text-anchor', 'middle');
-	//Cite data source.
-	g_el.append('text')
-		.text(item['citation'])
-		.attr('class', 'citation')
-		.attr('x', innerWidth)
-		.attr('y', innerHeight)
-		.attr('dy', 0.65 * margin.right)
-		.attr('transform', `rotate(-90, ${innerWidth}, ${innerHeight})`);
-
-	//Load the data.
-	const symbol = item['symbol'];
-	console.log(symbol);
+//Call renderChart inside the callback. Otherwise, renderCharts runs before the data are loaded.
+function loadData(id) {
+	const symbol = fred[id].symbol;
 	d3.csv(`${symbol}.csv`, (error, data) => {
 		if (error) throw new Error('d3.csv error');
 		//Transform data from strings to dates and numbers.
@@ -80,61 +41,118 @@ function renderChart(id, dateInit) {
 			d.DATE = parseDate(d.DATE);
 			d.VALUE = +d.VALUE;
 		})
-		status.data[id] = data;
-		console.log(status);
+		status[id].data = data;
+		status[id].g_el = renderChartFixed(id);
+		renderChart(id);
+	});
+}
+
+//Set domains.
+function xScaleSetDomain(dataSub) {
+	let xExtent = d3.extent(dataSub, (d) => {return d.DATE;});
+	//Provide a 1 day buffer to left and right of x axis so that initial and terminal vertical lines do not lie at edges of display area.
+	//A day expressed in milliseconds.
+	const day = 24 * 60 * 60 * 1000;
+	xExtent[0] = new Date(xExtent[0].valueOf() - day);
+	xExtent[1] = new Date(xExtent[1].valueOf() + day);
+	xScale.domain(xExtent);
+}
+function yScaleSetDomain(dataSub) {
+	//Provide a buffer at bottom of y extent so that the minimum value does not disappear.
+	//Provide a buffer at top so that largest values do not touch top of display area.
+	let yExtent = d3.extent(dataSub, (d) => {return d.VALUE;});
+	yExtent[0] = 0.95 * yExtent[0];
+	yExtent[1] = 1.01 * yExtent[1];
+	yScale.domain(yExtent);
+}
+
+function renderChart(id) {
+	console.log('renderChart: ' + id);
+	const data = status[id].data;
+	let index = data.findIndex((x) => {return x.DATE >= status[id].dateInit;});
+	console.log('index: ', index);
+	let dataSub = data.slice(index); //data subset.
+	console.log('data.length: ', dataSub.length);
+	//Set scale domains.
+	xScaleSetDomain(dataSub);
+	yScaleSetDomain(dataSub);
+	//Place a vertical line at each data point.
+	let sw = strokeWidth(dataSub); //Adjust stroke width to number of data points.
+	const g_el = status[id].g_el;
+	g_el.selectAll('wombat') //Any non-empty string will serve here.
+		.data(dataSub)
+		.enter()
+		.append('line')
+		.attr('class', 'line')
+		.style('stroke-width', sw)
+		.attr('x1', (d) => {return xScale(d.DATE);})
+		.attr('x2', (d) => {return xScale(d.DATE);})
+		.attr('y1', innerHeight)
+		.attr('y2', (d) => {return (isNaN(d.VALUE) ? innerHeight : yScale(d.VALUE));});
+	//Axes. Must be generated after scales are specified.
+	let xAxis = d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y-%m-%d"));
+	g_el.append('g')
+		.attr('id', 'xAxis')
+		.attr('transform', `translate(0, ${innerHeight})`)
+		.call(xAxis)
+		.selectAll('text')
+		.style('text-anchor', 'end')
+		.attr('transform', 'rotate(-45)')
+		.attr('dx', '-0.8em')
+		.attr('dy', '0.1em');
+	//y-axis
+	let yAxis = d3.axisLeft(yScale);
+	g_el.append('g')
+		.attr('id', 'yAxis')
+		.call(yAxis);
+
+	d3.select('#euroIn').on('click', () => {
+		let dateInit = status['euro'].dateInit;
+		//During initial development arbitrarily choose a new dateInit.
+		//Recall that in Javascript months are numbered from 0.
+		dateInit = new Date(2016, 10, 15);
+		status['euro'].dateInit = dateInit;
+		let data = status['euro'].data;
 		let index = data.findIndex((x) => {return x.DATE >= dateInit;});
-		console.log('index: ', index);
-		//dataSub stands for "data subset".
-		let dataSub = data.slice(index);
-		console.log('data.length: ', dataSub.length);
+		let dataSub = data.slice(index); //data subset.
 		//Set scale domains.
-		let xExtent = d3.extent(dataSub, (d) => {return d.DATE;});
-		//Provide a 1 day buffer to left and right of x axis so that initial and terminal vertical line do not lie at edges of display area.
-		//A day expressed in milliseconds.
-		const day = 24 * 60 * 60 * 1000;
-		xExtent[0] = new Date(xExtent[0].valueOf() - day);
-		xExtent[1] = new Date(xExtent[1].valueOf() + day);
-		xScale.domain(xExtent);
-		//Provide a buffer at bottom of y extent so that the minimum value does not disappear.
-		//Provide a buffer at to so that largest values do not touch top of display area.
-		let yExtent = d3.extent(dataSub, (d) => {return d.VALUE;});
-		yExtent[0] = 0.95 * yExtent[0];
-		yExtent[1] = 1.01 * yExtent[1];
-		yScale.domain(yExtent);
-		//Place a vertical line at each data point.
-		//Adjust the stroke-width to the number of data points.
-		let sw = 2;
-		if (dataSub.length <= 32) {
-			sw = 8;
-		} else
-		if (dataSub.length <= 64) {
-			sw = 6;
-		} else
-		if (dataSub.length <= 128) {
-			sw = 4;
-		}
-		g_el.selectAll('wombat') //Any non-empty string will serve here.
-			.data(dataSub)
-			.enter()
-			.append('line')
-			.attr('class', 'line')
-			.style('stroke-width', sw)
+		xScaleSetDomain(dataSub);
+		yScaleSetDomain(dataSub);
+		let sw = strokeWidth(dataSub); //Adjust stroke width to number of data points.
+		console.log('sw: ', sw);
+		let g_el = status['euro'].g_el;
+		let update = g_el
+			.selectAll('line')
+			.data(dataSub, (d, i) => {
+				return d.DATE; //Join data by DATE.
+			});
+		//Use the same transition duration for all transitions.
+		let td = d3.transition().duration(2000);
+		update
+			.transition(td)
+			.ease(d3.easeLinear)
 			.attr('x1', (d) => {return xScale(d.DATE);})
 			.attr('x2', (d) => {return xScale(d.DATE);})
 			.attr('y1', innerHeight)
-			.attr('y2', (d) => {return (isNaN(d.VALUE) ? innerHeight : yScale(d.VALUE));});
-		//Axes.
-		//x-axis
-		g_el.append('g')
-			.attr('transform', `translate(0, ${innerHeight})`)
-			.call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%Y-%m-%d")))
+			.attr('y2', (d) => {return (isNaN(d.VALUE) ? innerHeight : yScale(d.VALUE));})
+			.style('stroke-width', sw);
+
+		//Update axes.
+		g_el.select('#xAxis').transition(td).call(xAxis)
 			.selectAll('text')
 			.style('text-anchor', 'end')
 			.attr('transform', 'rotate(-45)')
 			.attr('dx', '-0.8em')
 			.attr('dy', '0.1em');
-		//y-axis
-		g_el.append('g')
-			.call(d3.axisLeft(yScale));
-	})
+		//Update y-axis.
+		g_el.select('#yAxis').transition(td).call(yAxis);
+
+		update.exit()
+			.transition(td)
+			.ease(d3.easeLinear)
+			.attr('x1', 0)
+			.attr('x2', 0)
+			.remove();
+	});
+
 }
