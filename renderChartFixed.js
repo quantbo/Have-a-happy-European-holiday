@@ -7,12 +7,12 @@ function renderChartFixed(id) {
 		.attr('height', `${height}`);
 	//A rectangle congruent with the svg element is helpful during development.
 	//In production, comment out.
-	const rect = svg.append('rect')
-		.attr('height', `${height}px`)
-		.attr('width', `${width}px`)
-		.style('fill', 'none')
-		.style('stroke', 'black')
-		.style('stroke-width', '1px');
+//	const rect = svg.append('rect')
+//		.attr('height', `${height}px`)
+//		.attr('width', `${width}px`)
+//		.style('fill', 'none')
+//		.style('stroke', 'black')
+//		.style('stroke-width', '1px');
 	const g_el = svg.append('g')
 		.attr('id', 'g_el')
 		.attr('height', innerHeight)

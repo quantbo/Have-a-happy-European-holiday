@@ -17,24 +17,32 @@
 		<p>The real point of this post, though, is to consider how to present time series where there are a lot of gaps. The daily currency time series I am using are obtained from the Federal Reserve Bank of St. Louis (<a href='https://fred.stlouisfed.org/'>FRED</a>). They omit data for weekends, holidays, and also some days that, so far as I can tell, are nothing special.</p>
 		<h2>Lots of missing data</h2>
 		<p>The result is that a large proportion of the daily data are missing. To be precise, 29% of days are missing from the daily time series for the Euro and Pound time series.</p>
-		<p>When almost a third of the data are missing from a time series the common practice of drawing a line graph may conceal as much as it reveals. The viewer may be misled into the impression that the data are continuous whereas, in fact, they are intermittent. Having pondered how best to present such time series data I have concluded that bar charts are appropriate. Given that a time series tends to have a lot of data points, the bars are necessarily thin.</p>
+		<p>When almost a third of the data are missing from a time series the common practice of drawing a line graph may conceal as much as it reveals. The viewer may be misled into the impression that the data are continuous whereas, in fact, they are intermittent. Having pondered how best to present such time series data I have concluded that bar charts are appropriate.</p>
+		<h2>Variable bar thickness</h2>
+		<p>Given that a time series tends to have a lot of data points, the bars are necessarily thin. As the number of bars decreases when we zoom in, and increases when we zoom out, the thickness of the bars is adjusted.</p>
 
 		<!-- Match the id's of the div elements to the tags of the fred object literal stored in 'fred.js'. -->
-		<div id='euro'>
+		<div class='outer' id='euro'>
 			<svg></svg>
-			<br>
-			<button id='zoomIn'>Zoom In</button>
-			<button id='zoomOut'>Zoom Out</button>
+			<!--
+			I use a p element to enclose the buttons, as opposed to a div, because the insane CSS 'Collapsing margins' rule does not allow a div within a div to adjust the top margin. It appears to be allowed for a p. For a lengthy discussion of this situation see:
+			http://stackoverflow.com/questions/9519841/why-does-this-css-margin-top-style-not-work
+			-->
+			<p class='buttons'>
+				<button id='zoomIn'>Zoom In</button>
+				<button id='zoomOut'>Zoom Out</button>
+			</p>
 		</div>
-		<div id='pound'>
+		<div class='outer' id='pound'>
 			<svg></svg>
-			<br>
-			<button id='zoomIn'>Zoom In</button>
-			<button id='zoomOut'>Zoom Out</button>
-		</div>
+			<p class='buttons'>
+				<button id='zoomIn'>Zoom In</button>
+				<button id='zoomOut'>Zoom Out</button>
+			</form>
+		</p>
 
 		<h2>Coding note</h2>
-		<p>Downloading, cleaning, and transforming the data are easily managed in <a href='https://www.r-project.org/'>R</a>. To display the data in a browser <a href='https://d3js.org/'>D3</a> is indispensable. Attractive fonts are supplied by <a href='https://fonts.google.com/'>Google Fonts</a>.</p>
+		<p>Downloading, cleaning, and transforming the data are easily managed in <a href='https://www.r-project.org/'>R</a>. To display the data in a browser, and to enable user interaction with the data, <a href='https://d3js.org/'>D3</a> is indispensable. Attractive fonts are supplied by <a href='https://fonts.google.com/'>Google Fonts</a>.</p>
 		<p>You can view the code and data on <a href='https://github.com/quantbo/Have-a-happy-European-holiday'>Github</a>.</p>
 		<footer>
 			<p id=copyright>Copyright (C) 2016, John Van Praag</p>

@@ -14,9 +14,9 @@ body {
 
 button {
 	color: aliceblue;
-	background-color:blue;
+	background-color: rgba(0, 64, 255, 1);
 	border-radius: 0.25em;
-	font-size: 2em;
+	font-size: 0.9em;
 }
 
 h1 {
@@ -38,29 +38,20 @@ p {
 	font-size: 1.1em;
 }
 
-svg {
+div {
 	margin-bottom: 12.5px;
 	margin-top: 5px;
+	margin: 0;
 }
-svg:last-of-type {
+div:last-of-type {
 	margin-bottom: 5px;
+	margin-top: 32px;
 }
 
-/*
-ul {
-	font-size: 1.1em;
+.buttons {
+	margin-top: 1px;
+	text-align: center;
 }
-
-li {
-	margin-top: 20px;
-}
-li:first-child {
-	margin-top: 0;
-}
-li p {
-	margin-top: 8px;
-}
-*/
 
 .citation {
 	font-family: serif;
