@@ -19,6 +19,15 @@ const parseDate = d3.timeParse('%Y-%m-%d');
 let xScale = d3.scaleTime().range([0, innerWidth]);
 let yScale = d3.scaleLinear().range([innerHeight, 0]);
 
+//Setting transitions through a global variable, as commented out, does not work.
+//const td = d3.transition().duration(2000).ease(d3.easeLinear); //DOES NOT WORK.
+//Setting transitions through a function does work.
+//This violates the principal that functions are first class variables in Javascript.
+//This is an instance where a function and a non-function variable are treated differently by the interpreter.
+function get_td() {
+	return d3.transition().duration(1500).ease(d3.easeLinear);
+}
+
 //Default time series start date.
 const dateInit = new Date(2016, 0, 1);
 //Dealing with large amounts of daily data can slow some browsers to a crawl and cause them to become confused.
@@ -28,18 +37,7 @@ const dateMin = new Date(2011, 0, 1);
 //In the event that different time series have different end dates, dateMax is an object literal.
 let dateMax = {}; //Set values when time series are loaded.
 
-//Setting transitions through a global variable, as commented out, does not work.
-//const td = d3.transition().duration(2000).ease(d3.easeLinear); //DOES NOT WORK.
-//Setting transitions through a function does work.
-function get_td() {
-	return d3.transition().duration(1500).ease(d3.easeLinear);
-}
-//This violates the principal that functions are first class variables in Javascript.
-//This is an instance where a function and a non-function variable are treated differently by the interpreter.
-
 //For each time series store the data and the initial date.
-//This allows the data to be re-used without reloading from disk.
-//It also allows the initial date to be updated based on the current initial date.
 let status = {};
 //Populate status.
 d3.selectAll('div.outer').nodes().forEach((d, i) => {
@@ -69,7 +67,7 @@ function loadData(id) {
 	});
 }
 
-//Set domains.
+//Functions that set domains.
 function xScaleSetDomain(dataSub) {
 	let xExtent = d3.extent(dataSub, (d) => {return d.DATE;});
 	//Provide a 1 day buffer to left and right of x axis so that initial and terminal vertical lines do not lie at edges of display area.

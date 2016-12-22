@@ -1,3 +1,5 @@
+'use strict';
+
 //Render the parts of a chart that do not change when the data change.
 function renderChartFixed(id) {
 	//id: div id.
