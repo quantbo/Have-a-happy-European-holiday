@@ -8,10 +8,6 @@ const margin = {top: 35, right: 30, bottom: 55, left: 50};
 const innerHeight = height - margin.top - margin.bottom;
 const innerWidth = width - margin.left - margin.right;
 
-//Store the default button background color.
-//This is used to restore the background color when a grayed out button is re-enabled.
-const buttonBC = d3.select('button').style('background-color');
-
 //Parse date function. Dates are in the format 1999-12-01 (year-month-day).
 const parseDate = d3.timeParse('%Y-%m-%d');
 
@@ -25,7 +21,7 @@ let yScale = d3.scaleLinear().range([innerHeight, 0]);
 //This violates the principal that functions are first class variables in Javascript.
 //This is an instance where a function and a non-function variable are treated differently by the interpreter.
 function get_td() {
-	return d3.transition().duration(1500).ease(d3.easeLinear);
+	return d3.transition().duration(1250).ease(d3.easeLinear);
 }
 
 //Default time series start date.
@@ -37,14 +33,30 @@ const dateMin = new Date(2011, 0, 1);
 //In the event that different time series have different end dates, dateMax is an object literal.
 let dateMax = {}; //Set values when time series are loaded.
 
-//For each time series store the data and the initial date.
+//For each time series store the data and track zooming in and out.
+//Zooming in and out should be managed so that the initial date is restored. In other words, the user should be able to return to the initial view. The following stacks support that goal.
 let status = {};
 //Populate status.
 d3.selectAll('div.outer').nodes().forEach((d, i) => {
 	status[d.id] = {};
 	loadData(d.id);
 	status[d.id].dateInit = dateInit;
+	//The following stacks track how many records are added or subtracted from a chart.
+	//If both stacks are empty this corresponds to the initial view.
+	status[d.id].iStack = []; //Track zooming in from initial view.
+	status[d.id].oStack = []; //Track zooming out from initial view.
 });
+
+let debug = true;
+
+//Display stacks. Use during debugging.
+function displayStacks(id, comment, debug) {
+	if (!debug) return;
+	console.log(`* iStack (${comment}):`);
+	console.log(status[id].iStack);
+	console.log(`* oStack (${comment}):`);
+	console.log(status[id].oStack);	
+}
 
 //Call renderChart inside the callback. Otherwise, renderChart runs before the data are loaded.
 function loadData(id) {
@@ -130,28 +142,33 @@ function renderChart(id, g_el) {
 	//================ zoomIn ================
 	d3.select(`#${id}`).select('#zoomIn').on('click', () => {
 		console.log(`---------- zoomIn, id = ${id}  countSub (before update) = ${countSub}`);
-		//If the number of data points is <= 4 weeks, return.
+		//If the number of data points is <= lolim, return.
 		const lolim = 28;
 		if (countSub <= lolim) {
 			return;
 		}
-		//Check whether zoomOut button needs to be un-grayed.
-		let zOut = d3.select(`#${id}`).select('#zoomOut');
-		//Avoid using the 'disabled' attribute here. In Firefox it appears to be sticky, i.e., setting it to null does not cause it to disappear.
-		if (zOut.attr('gOut') == 'true') {
-			zOut.style('background-color', buttonBC);
-			zOut.attr('gOut', null);
-		}
+		//If necessary, un-gray zoomOut.
+		ungray(id, 'zoomOut');
+		//Display stacks before zoom.
+		displayStacks(id, 'before zoom');
 		//Update dateInit.
 		let dateInit = status[id].dateInit;
 		console.log(`dateInit (before update): ${dateInit}`);
-		//Use floor here, not round or ceil. This handles an edge case where 1) the user has zoomed out to the maximum extent; 2) zooms in; 3) zooms out again to the maximum extent. By setting incDate to the floor, countSub is made large enough to cover the remaining data points at step 3.
-		let incDate = Math.floor(countSub/2); //Increment date by this amount.
-		dateInit = addDays(dateInit, incDate, dateMin, dateMax[id]);
+		let delta = -Infinity; //Amount by which to increment date.
+		let updateStack = true;
+		if (status[id].oStack.length > 0) {
+			delta = status[id].oStack.pop();
+			updateStack = false; //Do not update this button's stack.
+		} else {
+			delta = Math.round(countSub/2); //Increment date by this amount.
+		}
+		dateInit = addDays(dateInit, delta, dateMin, dateMax[id]);
 		console.log(`dateInit (after update): ${dateInit}`);
 		status[id].dateInit = dateInit;
 		let index = dataAll.findIndex((x) => {return x.DATE >= dateInit;});
 		dataSub = dataAll.slice(index); //data subset.
+		//Update stack; then, update countSub.
+		if (updateStack) status[id].iStack.push(countSub - dataSub.length);
 		countSub = dataSub.length;
 		console.log(`zoomIn, id = ${id}  countSub (after update) = ${countSub}`);
 		//Set scale domains.
@@ -189,49 +206,45 @@ function renderChart(id, g_el) {
 		//Update y-axis.
 		g_el.select('#yAxis').transition(td).call(yAxis);
 
-		//If the number of data points is <= lolim, grey the button.
-		if (countSub <= lolim) {
-			let me = d3.select(`#${id}`).select('#zoomIn');
-			me.attr('gOut', 'true');
-			me.style('background-color', 'rgba(128, 128, 128, 1)');
-		}
+		//If the number of data points is <= lolim, gray the button.
+		if (countSub <= lolim) gray(id, 'zoomIn');
 
+		//Display stacks after zoom.
+		displayStacks(id, 'after zoom');
 	});
 
 	//================ zoomOut ================
 	d3.select(`#${id}`).select('#zoomOut').on('click', () => {
 		console.log(`---------- zoomOut, id = ${id}  countSub (before update) = ${countSub}`);
-		console.log(`countAll: ${countAll}`);
-		//If the number of data points equals the maximum available, grey the button and return.
+		//If the number of data points equals the maximum available, do nothing.
 		if (countSub == countAll) {
-			console.log('zoomOut: Inside: if (countSub >= countAll) {')
-			let me = d3.select(`#${id}`).select('#zoomOut');
-			me.attr('gOut', 'true');
-			me.style('background-color', 'rgba(128, 128, 128, 1)');
 			return;
 		}
-		//Check whether zoomIn button needs to be un-grayed.
-		let zIn = d3.select(`#${id}`).select('#zoomIn');
-		if (zIn.attr('gOut') == 'true') {
-			zIn.style('background-color', buttonBC);
-			zIn.attr('gOut', null);
-		}
+		console.log(`countAll: ${countAll}`);
+		//Un-gray the zoomIn button if necessary.
+		ungray(id, 'zoomIn');
+		//Display stacks before zoom.
+		displayStacks(id, 'before zoom');
 		//Update dateInit.
 		let dateInit = status[id].dateInit;
 		console.log(`dateInit (before update): ${dateInit.toISOString()}`);
-		dateInit = addDays(dateInit, -countSub, dateMin, dateMax[id]); //Move dateInit back in time.
+		let delta = -Infinity; //Number of days to change date.
+		let updateStack = true;
+		if (status[id].iStack.length > 0) {
+			delta = -status[id].iStack.pop();
+			updateStack = false; //Do not update this button's stack.
+		} else {
+			delta = -countSub;
+		}
+		dateInit = addDays(dateInit, delta, dateMin, dateMax[id]); //Move dateInit back in time.
 		console.log(`dateInit (after update): ${dateInit.toISOString()}`);
 		status[id].dateInit = dateInit;
 		let index = dataAll.findIndex((x) => {return x.DATE >= dateInit;});
 		dataSub = dataAll.slice(index); //data subset.
+		//Update stack.
+		if (updateStack) status[id].oStack.push(dataSub.length - countSub);
 		countSub = dataSub.length;
 		console.log(`zoomOut, id = ${id}  countSub (after update) = ${countSub}`);
-		//If the number of data points equals countAll, grey the button.
-		if (countSub == countAll) {
-			let me = d3.select(`#${id}`).select('#zoomOut');
-			me.attr('gOut', 'true');
-			me.style('background-color', 'rgba(128, 128, 128, 1)');
-		}
 		//Set scale domains.
 		xScaleSetDomain(dataSub);
 		yScaleSetDomain(dataSub);
@@ -264,7 +277,12 @@ function renderChart(id, g_el) {
 			.attr('dy', '0.1em');
 		//Update y-axis.
 		g_el.select('#yAxis').transition(td).call(yAxis);
-		
+
+		//If the number of data points equals the maximum available, gray zoomOut button.
+		if (countSub == countAll) gray(id, 'zoomOut');
+
+		//Display stacks after zoom.
+		displayStacks(id, 'after zoom');
 	});
 
 }

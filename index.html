@@ -19,7 +19,8 @@
 		<p>The result is that a large proportion of the daily data are missing. To be precise, 29% of days are missing from the daily time series for the Euro and Pound time series.</p>
 		<p>When almost a third of the data are missing from a time series the common practice of drawing a line graph may conceal as much as it reveals. The viewer may be misled into the impression that the data are continuous whereas, in fact, they are intermittent. Having pondered how best to present such time series data I have concluded that bar charts are appropriate.</p>
 		<h2>Variable bar thickness</h2>
-		<p>Given that a time series tends to have a lot of data points, the bars are necessarily thin. As the number of bars decreases when we zoom in, and increases when we zoom out, the thickness of the bars is adjusted.</p>
+		<p>Given that a time series tends to have a lot of data points, the bars are necessarily thin. As the number of bars decreases when zooming in, and increases when zooming out, the thickness of the bars is adjusted.</p>
+		<p>On my setup this works well in Firefox but is messed up by Chrome. If readers have similar or different experiences with Chrome, or other browsers, please post a comment on GitHub.</p>
 
 		<!-- Match the id's of the div elements to the tags of the fred object literal stored in 'fred.js'. -->
 		<div class='outer' id='euro'>
@@ -36,8 +37,8 @@
 		<div class='outer' id='pound'>
 			<svg></svg>
 			<p class='buttons'>
-				<button id='zoomIn'>Zoom In</button>
-				<button id='zoomOut'>Zoom Out</button>
+				<button id='zoomIn' grayOut='false'>Zoom In</button>
+				<button id='zoomOut' grayOut='false'>Zoom Out</button>
 			</form>
 		</p>
 
@@ -52,5 +53,6 @@
 	<script src='strokeWidth.js'></script>
 	<script src='addDays.js'></script>
 	<script src='renderChartFixed.js'></script>
+	<script src='gray_ungray.js'></script>
 	<script src='index.js'></script>
 </html>
